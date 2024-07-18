@@ -1,0 +1,61 @@
+Lesson 0
+
+26 October 2023
+
+Getting Started in R with DHEC
+
+1.  Install RStudio <https://www.r-project.org/>
+2.  Review RStudio Editor
+3.  Equivalence of console and scripts
+
+Packages
+
+```{r}
+install.packages("pacman")
+library(pacman)
+p_load(ggplot2,readxl,apyramid)
+# Working Directory
+setwd("/Users/andrew/rtraining")
+
+# Functions
+print("hello world")
+help(print)
+sqrt(49)
+
+# Objects (everything is an object)
+linelist <- read_excel("linelist_cleaned.xlsx")
+View(linelist)
+
+summary(linelist)
+help(age_pyramid)
+
+# Data Type, Casting
+linelist$age_cat5 <- as.factor(linelist$age_cat5)
+typeof(linelist$age_cat5)
+ordered(linelist$age_cat5)
+help(as.factor)
+
+# Programming is creative - sometimes manual
+linelist$age_cat5 <- factor(linelist$age_cat5,levels=c("0-4","5-9", "10-14", "15-19", "20-24", "25-29" ,"30-34", "35-39", "40-44","45-49" ,"50-54" ,"55-59", "60-64","65-69", "70-74" ,"75-79", "80-84"))
+
+# Plotting
+# install.packages("apyramid")
+age_pyramid(linelist,"age_cat5","gender",proportional=TRUE,pal=c("#7D82B8","#613F75"))
+
+# Lesson 2
+# Tue Nov 9
+################
+
+# Piping
+library(magrittr)
+library(dplyr)
+
+# Count
+linelist %>% count(age_cat)
+
+# Filter
+
+# Mutate
+
+# Assignment Pipe
+```

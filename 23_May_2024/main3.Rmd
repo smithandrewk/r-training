@@ -1,0 +1,64 @@
+---
+title: 
+date: "`r Sys.Date()`"
+output:
+  pdf_document: default
+params:
+  hospital: Central Hospital
+  date: 2024-05-22
+---
+
+# Surveillance Report for `r params$hospital`
+
+# Introduction
+
+This document aims to analyze the linelist data to provide insights into the outbreak dynamics. The analysis includes age distribution, epidemic curve, gender distribution, symptoms analysis, geographic distribution, case fatality rate by age group, time from infection to hospitalization, and hospital stay duration.
+
+```{r setup}
+pacman::p_load(ggplot2,rio,dplyr)
+library(tidyr)
+```
+
+**Data as of `r params$date`**
+
+```{r data}
+linelist_hospital <- rio::import('linelist_cleaned.xlsx') %>% filter(hospital==params$hospital)
+```
+
+There were `r nrow(linelist_hospital)` cases in `r params$hospital` (up to `r params$date`)
+
+```{r echo=FALSE, warning=FALSE}
+# Age Distribution
+ggplot(linelist_hospital, aes(x = age)) +
+  geom_histogram(binwidth = 5, fill = 'skyblue', color = 'black') +
+  labs(title = 'Age Distribution of Cases', x = 'Age', y = 'Frequency') +
+  theme_minimal()
+```
+
+### Age Profile of Cases
+
+```{r include=FALSE}
+less18 <- linelist_hospital %>%
+  filter(age <= 18) %>% nrow()
+
+total <- linelist_hospital %>% filter(!is.na(age)) %>% nrow()
+
+less18prop <- round(less18/total*100,1)
+```
+
+`r  less18prop`% of cases were younger than 18 years (`r less18` of `r total`).
+
+*Figure 1* On average, cases had an age of `r round(mean(linelist_hospital$age,na.rm=TRUE),2)`
+
+```{r}
+# Symptoms Analysis
+symptoms <- linelist_hospital %>% 
+  select(fever, cough, chills, aches, vomit) %>%
+  pivot_longer(cols = everything(), names_to = "symptom", values_to = "presence") %>%
+  filter(presence == "yes")
+
+ggplot(symptoms, aes(x = symptom)) +
+  geom_bar(fill = 'purple', color = 'black') +
+  labs(title = 'Symptom Analysis', x = 'Symptom', y = 'Count') +
+  theme_minimal()
+```

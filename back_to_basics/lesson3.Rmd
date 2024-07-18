@@ -1,0 +1,52 @@
+```{r}
+pacman::p_load(
+  rio,          # file import/export
+  here,         # relative filepaths 
+  lubridate,    # working with dates/epiweeks
+  aweek,        # alternative package for working with dates/epiweeks
+  incidence2,   # epicurves of linelist data
+  i2extras,     # supplement to incidence2
+  stringr,      # search and manipulate character strings
+  forcats,      # working with factors
+  RColorBrewer, # Color palettes from colorbrewer2.org
+  tidyverse     # data management + ggplot2 graphics
+) 
+```
+
+```{r}
+linelist <- import("data/linelist_cleaned.xlsx")
+linelist$date_onset <- as.Date(linelist$date_onset)
+```
+
+```{r}
+# check range of onset dates
+ggplot(data = linelist)+
+  geom_histogram(aes(x = date_onset), binwidth = 1)
+```
+
+```{r}
+central_data <- linelist %>% 
+  filter(hospital == "Central Hospital")
+```
+
+```{r}
+# check range of onset dates
+ggplot(data = central_data)+
+  geom_histogram(aes(x = date_onset), binwidth = 7) +
+  labs(title="Central Hospital - Weekly")
+```
+
+```{r}
+# check range of onset dates
+
+```
+
+```{r}
+source("dhec_utils/utils.R")
+plot_epicurve(linelist=linelist,my_hospital="Central Hospital")
+```
+
+```{r}
+
+
+```

@@ -1,0 +1,44 @@
+---
+title: "Surveillance Report"
+author: "Andrew Smith"
+date: "`r Sys.Date()`"
+---
+# Report for `r params$hospital`
+## Introduction
+This document aims to analyze the linelist data to provide insights into the outbreak dynamics. The analysis includes age distribution, epidemic curve, gender distribution, symptoms analysis, geographic distribution, case fatality rate by age group, time from infection to hospitalization, and hospital stay duration.
+
+```{r include=FALSE}
+library(readxl)
+library(dplyr)
+library(tidyr)
+
+df <- read_excel("linelist_cleaned.xlsx")
+df <- df %>% filter(hospital==params$hospital)
+```
+
+```{r include=FALSE}
+n_lt_18 <- sum(df$age < 18,na.rm=TRUE)
+total <- sum(!is.na(df$age))
+prop_lt_18 <- (n_lt_18 / total)*100
+```
+
+## Summary Statistics
+`r round(prop_lt_18,digits=2)`% of cases were \textcolor{red}{younger} than 18 years (`r n_lt_18` out of `r total`).
+
+```{r echo=FALSE, warning=FALSE}
+library(ggplot2)
+ggplot(data=df) + geom_histogram(mapping=aes(x=age),binwidth=5,fill='skyblue',color='black') + labs(title='Age Distribution of Cases',x='Age',y='Frequency') + theme_minimal()
+```
+
+```{r echo=FALSE}
+# Symptoms Analysis
+symptoms <- df %>% 
+  select(fever, cough, chills, aches, vomit) %>%
+  pivot_longer(cols = everything(), names_to = "symptom", values_to = "presence") %>%
+  filter(presence == "yes")
+
+ggplot(symptoms, aes(x = symptom)) +
+  geom_bar(fill = 'purple', color = 'black') +
+  labs(title = 'Symptom Analysis', x = 'Symptom', y = 'Count') +
+  theme_minimal()
+```

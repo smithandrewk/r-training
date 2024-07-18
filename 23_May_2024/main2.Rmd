@@ -1,0 +1,111 @@
+---
+title: "Situation Report"
+author: "Your Name"
+date: "`r Sys.Date()`"
+output: word_document
+---
+
+## Introduction
+
+This report provides a comprehensive analysis of the current epidemiological situation using the provided linelist data. Key metrics and visualizations are included to facilitate understanding of the outbreak dynamics and support decision-making processes.
+
+## Data Import and Analysis
+
+```{r  include=FALSE}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(tidyr)
+library(sf)
+library(ggmap)
+library(lubridate)
+
+# Load the data
+linelist_data <- read_excel("linelist_cleaned.xlsx")
+
+# Convert date columns to Date format
+date_columns <- c('date_infection', 'date_onset', 'date_hospitalisation', 'date_outcome')
+linelist_data[date_columns] <- lapply(linelist_data[date_columns], as.Date)
+
+# Preview the data
+head(linelist_data)
+
+# Calculate additional metrics
+linelist_data <- linelist_data %>%
+  mutate(
+    days_onset_hosp = as.numeric(date_hospitalisation - date_onset),
+    days_hosp_outcome = as.numeric(date_outcome - date_hospitalisation)
+  )
+```
+
+``` {r echo=FALSE, warning=FALSE}
+# Age Distribution
+ggplot(linelist_data, aes(x = age)) +
+  geom_histogram(binwidth = 5, fill = 'skyblue', color = 'black') +
+  labs(title = 'Age Distribution of Cases', x = 'Age', y = 'Frequency') +
+  theme_minimal()
+```
+
+``` {r echo=FALSE, warning=FALSE}
+# Epidemic Curve
+ggplot(linelist_data, aes(x = date_onset)) +
+  geom_histogram(binwidth = 1, fill = 'orange', color = 'black') +
+  labs(title = 'Epidemic Curve', x = 'Date of Onset', y = 'Number of Cases') +
+  theme_minimal()
+```
+
+```{r}
+# Symptoms Analysis
+symptoms <- linelist_data %>% 
+  select(fever, cough, chills, aches, vomit) %>%
+  pivot_longer(cols = everything(), names_to = "symptom", values_to = "presence") %>%
+  filter(presence == "yes")
+
+ggplot(symptoms, aes(x = symptom)) +
+  geom_bar(fill = 'purple', color = 'black') +
+  labs(title = 'Symptom Analysis', x = 'Symptom', y = 'Count') +
+  theme_minimal()
+```
+
+```{r}
+# Case Fatality Rate by Age Group
+case_fatality <- linelist_data %>%
+  group_by(age) %>%
+  summarize(
+    total_cases = n(),
+    total_deaths = sum(outcome == "Death", na.rm = TRUE),
+    case_fatality_rate = (total_deaths / total_cases) * 100
+  )
+
+ggplot(case_fatality, aes(x = age, y = case_fatality_rate)) +
+  geom_line(color = 'red') +
+  geom_point(color = 'blue') +
+  labs(title = 'Case Fatality Rate by Age Group', x = 'Age', y = 'Case Fatality Rate (%)') +
+  theme_minimal()
+```
+
+```{r}
+# Time Series Analysis: Infection to Hospitalization
+time_series <- linelist_data %>%
+  filter(!is.na(date_infection) & !is.na(date_hospitalisation)) %>%
+  mutate(time_to_hospital = as.numeric(date_hospitalisation - date_infection))
+
+ggplot(time_series, aes(x = time_to_hospital)) +
+  geom_histogram(binwidth = 1, fill = 'blue', color = 'black') +
+  labs(title = 'Time from Infection to Hospitalization', x = 'Days', y = 'Number of Cases') +
+  theme_minimal()
+
+```
+
+```{r}
+# Hospital Stay Duration
+linelist_data <- linelist_data %>%
+  mutate(hospital_stay_duration = as.numeric(date_outcome - date_hospitalisation))
+
+ggplot(linelist_data, aes(x = hospital_stay_duration)) +
+  geom_histogram(binwidth = 1, fill = 'green', color = 'black') +
+  labs(title = 'Hospital Stay Duration', x = 'Days', y = 'Number of Cases') +
+  theme_minimal()
+
+```

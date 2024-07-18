@@ -1,0 +1,54 @@
+```{r}
+pacman::p_load(
+  tidyverse,      # includes ggplot2 and other data management tools
+  janitor,        # cleaning and summary tables
+  ggforce,        # ggplot extras
+  rio,            # import/export
+  here,           # file locator
+  stringr         # working with characters   
+)
+```
+
+```{r}
+library(readxl)
+linelist_cleaned <- read_excel("linelist_cleaned.xlsx")
+linelist_cleaned
+```
+
+```{r}
+symptoms <- linelist_cleaned %>% select(c(case_id,fever,chills,cough,aches,vomit))
+```
+
+```{r}
+symptoms
+```
+
+```{r}
+pivot_longer(data=symptoms,cols = -case_id)
+```
+
+```{r}
+library(ggplot2)
+# geoms
+ggplot(data=linelist_cleaned) + geom_point(mapping=aes(ht_cm,wt_kg))
+```
+
+```{r}
+ggplot(data=linelist_cleaned,mapping=aes(x=ht_cm)) + geom_histogram(bins=100)
+```
+
+```{r}
+ggplot(data=linelist_cleaned) + geom_point(mapping=aes(ht_cm,wt_kg,color=gender),size=.8,alpha=.5) + geom_smooth(mapping=aes(ht_cm,wt_kg,color=gender),method='lm')
+```
+
+```{r}
+my_plot <- ggplot(data=linelist_cleaned,mapping=aes(age,wt_kg,color=gender)) + geom_point(size=.8,alpha=.5) + geom_smooth(method='lm')
+my_plot
+```
+
+```{r}
+my_plot_with_centroid <- my_plot + geom_vline(xintercept = mean(linelist_cleaned$age,na.rm = TRUE)) + geom_hline(yintercept = mean(linelist_cleaned$wt_kg,na.rm = TRUE),color='red') + labs(title="Age vs weight with centroid") + xlab("Age (years)") + ylab("Weight (kg)")
+
+ggsave(filename='out.pdf',plot=my_plot_with_centroid,width=7.2,height=4.45)
+help(labs)
+```

@@ -1,0 +1,37 @@
+Lesson 3
+
+Epidemic Curves
+
+```{r}
+pacman::p_load(
+  rio,          # file import/export
+  here,         # relative filepaths 
+  lubridate,    # working with dates/epiweeks
+  aweek,        # alternative package for working with dates/epiweeks
+  incidence2,   # epicurves of linelist data
+  i2extras,     # supplement to incidence2
+  stringr,      # search and manipulate character strings
+  forcats,      # working with factors
+  RColorBrewer, # Color palettes from colorbrewer2.org
+  tidyverse     # data management + ggplot2 graphics
+) 
+```
+
+```{r}
+linelist <- import("data/linelist_cleaned.xlsx")
+```
+
+```{r}
+# import the counts data into R
+count_data <- linelist %>% 
+  group_by(hospital, date_hospitalisation) %>% 
+  summarize(n_cases = dplyr::n()) %>% 
+  filter(date_hospitalisation > as.Date("2013-06-01")) %>% 
+  ungroup()
+```
+
+```{r}
+## set the report date for the report
+## note: can be set to Sys.Date() for the current date
+data_date <- as.Date("2015-05-15")
+```

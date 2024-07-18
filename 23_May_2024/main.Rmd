@@ -1,0 +1,29 @@
+---
+title: "Situation Report"
+author: "Andrew Smith"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Introduction {.tabset}
+
+This report provides an analysis of the current epidemiological situation using the provided linelist data. Key metrics and visualizations are included to facilitate understanding of the outbreak dynamics.
+### Tab
+test
+### Tab
+tet
+## Data Import and Analysis
+
+```{r include=FALSE}
+# Load necessary libraries
+library(ggplot2)
+library(dplyr)
+library(readxl)
+library(tidyr)
+library(sf)
+library(ggmap)
+
+# Load the data
+linelist_data <- read_excel("linelist_cleaned.xlsx")
+```
+

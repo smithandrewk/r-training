@@ -1,0 +1,98 @@
+29 February 2024
+
+```{r}
+pacman::p_load(tidyverse)
+
+library(readxl)
+counts <- read_excel("campylobacter_germany.xlsx")
+```
+
+```{r}
+typeof(counts$date) # cast to Date
+```
+
+```{r}
+typeof(counts$case) # double-precision floating-point value
+```
+
+```{r}
+counts$date <- as.Date(counts$date)
+pacman::p_load(tsibble)
+help(tsibble)
+```
+
+```{r}
+
+counts$epiweek <- yearweek(counts$date,week_start = 1)
+```
+
+```{r}
+counts_ts <- tsibble(counts,index=epiweek)
+```
+
+```{r}
+class(counts_ts)
+```
+
+```{r}
+pacman::p_load(ggplot2)
+```
+
+```{r}
+ggplot(counts_ts,aes(x=epiweek,y=case)) + 
+  geom_line()
+```
+
+```{r}
+# duplicates and missing values
+counts_ts$case_miss <- str_detect(counts_ts$epiweek, "W51|W52|W53|W01|W02")
+```
+
+```{r}
+counts_ts$case_interpolated <- if_else(counts_ts$case_miss,NA_real_,counts_ts$case)
+```
+
+```{r}
+ggplot(counts_ts,aes(x=epiweek,y=case_interpolated)) + 
+  geom_line()
+```
+
+```{r}
+pacman::p_load(imputeTS)
+```
+
+```{r}
+counts_ts$case_interpolated <- imputeTS::na_interpolation(counts_ts$case_interpolated)
+```
+
+```{r}
+ggplot(counts_ts,aes(x=epiweek,y=case_interpolated)) + 
+  geom_line()
+```
+
+```{r}
+# moving average
+pacman::p_load(slider)
+help(slide_dbl)
+counts_ts$ma <- slide_dbl(counts_ts$case_interpolated,mean,.before=10)
+ggplot(counts_ts,aes(x=epiweek,y=ma)) + 
+  geom_line()
+```
+
+```{r}
+ggplot(counts_ts,aes(x=epiweek)) + 
+  geom_line(aes(y=case_interpolated)) +
+  geom_line(aes(y=ma),colour="red") #10-week moving average
+```
+
+```{r}
+pacman::p_load(feasts)
+counts_ts %>%
+  model(classical_decomposition(case_interpolated,type="additive")) %>%
+  components() %>%
+  autoplot()
+```
+
+```{r}
+help(autoplot)
+```

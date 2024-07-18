@@ -1,0 +1,59 @@
+# Intro to Bioinformatics Day 2
+
+-   4 "base pairs" ATCG
+
+-   A - T
+
+-   C - G
+
+-   T - A
+
+-   G - C
+
+-   Human DNA Sequence is approximately 4.8 billion base pairs
+
+-   ATGCTATCTATCTATCTATCTACGGCGATCGATGGTA could be a gene
+
+-   Humans have \~40,000
+
+-   We work with infectious disease. Diseases (bacterial, viral) commonly have "genomes" or DNA sequences
+
+-   Strep, COVID, salmonella
+
+-   COVID has variants.
+
+-   COVID genome is about 29000 base pairs
+
+    ```{r}
+    seq <- "ATG"
+    seq2 <- ""
+    seq3
+    ```
+
+```{r}
+library("ape")
+library(msa)
+```
+
+```{r}
+# Example sequences
+
+```
+
+```{r}
+library(Biostrings)
+
+```
+
+```{r}
+dna_sequences <- Biostrings::DNAStringSet(sequences)
+```
+
+```{}
+```
+
+```{}
+```
+
+```{}
+```

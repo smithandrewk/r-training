@@ -1,0 +1,91 @@
+Lesson 2
+
+November 9th, 2023
+
+```{r}
+print("hello world")
+```
+
+**Piping Operator**
+
+```{r}
+  sqrt(49)
+```
+
+# Config
+
+```{r}
+library(magrittr)
+library(dplyr)
+library(pacman)
+p_load(ggplot2,readxl)
+setwd("/Users/andrew/R_training")
+getwd()
+```
+
+```{r}
+list.dirs(path = getwd())
+list.files()
+```
+
+```{r}
+library(readxl)
+linelist <- read_excel("linelist_cleaned.xlsx")
+linelist
+```
+
+```{r}
+linelist$age_cat5 <- factor(linelist$age_cat5,levels=c("0-4","5-9", "10-14", "15-19", "20-24", "25-29" ,"30-34", "35-39", "40-44","45-49" ,"50-54" ,"55-59", "60-64","65-69", "70-74" ,"75-79", "80-84"))
+linelist
+```
+
+```{r}
+age_pyramid(linelist,"age_cat5","gender",proportional=TRUE,pal=c("#7D82B8","#613F75"))
+```
+
+# Piping Operator
+
+```{r}
+# Not in base R
+# Piping operator comes with magrittr
+linelist %>% count(age_cat5)
+```
+
+```{r}
+count(linelist,age_cat5)
+```
+
+```{r}
+# Very important function
+# linelist[linelist$age > 50,] # base R
+filter(linelist, age>50)
+```
+
+```{r}
+# linelist$age_months <- linelist$age_years * 12
+mutate(linelist, age_months_tmp = age_years * 12)
+```
+
+```{r}
+linelist
+linelist_filtered <- filter(linelist, age > 50)
+linelist_filtered_mutated <- mutate(linelist_filtered, age_months = age_years * 12)
+linelist_filtered_mutated
+```
+
+```{r}
+linelist
+linelist <- filter(linelist, age > 50)
+linelist <- mutate(linelist, age_months = age_years * 12)
+linelist
+```
+
+```{r}
+summary <- linelist %>% 
+  mutate(age_months = age_years * 12) %>% 
+  filter(age > 50) %>%
+  count(outcome) %>%
+
+summary
+# https://epirhandbook.com/en/r-basics.html#piping
+```

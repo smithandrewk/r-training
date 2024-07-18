@@ -1,0 +1,68 @@
+# 11 April 2024
+
+```{r}
+library(readxl)
+linelist_cleaned <- read_excel("linelist_cleaned.xlsx")
+View(linelist_cleaned)
+```
+
+```{r}
+library(ggplot2)
+
+ggplot(linelist_cleaned) + geom_point(aes(x=age,y=ht_cm))
+```
+
+```{r}
+lm(ht_cm ~ age,data=linelist_cleaned)
+#25*3.439 + 69.687
+#155.662 / 2.54
+#61.28425/12
+```
+
+```{r}
+age_vector <- c(0,10,20,30,40,50,60,70,80)
+height_vector <- age_vector*3.439 + 69.687
+model <- data.frame(age_vector,height_vector)
+```
+
+,10,20,30,40,50,60,70,80)
+
+height_vector \<- age_vector\*3.439 + 69.687
+
+model \<- data.fram
+
+```{r}
+ggplot(linelist_cleaned) + geom_point(aes(x=age,y=ht_cm)) + geom_line(data=model,aes(x=age_vector,y=height_vector,color='r'))
+```
+
+```{r}
+C <- 11
+F <- C*9/5 + 32
+F
+```
+
+```{r}
+ggplot(data=linelist_cleaned,aes(x=age,y=ht_cm)) + geom_point() + geom_smooth(method = 'lm') 
+```
+
+```{r}
+ggplot(data=linelist_cleaned,aes(x=gender,y=ht_cm)) + geom_point()
+```
+
+```{r}
+linelist <- na.omit(linelist_cleaned)
+```
+
+```{r}
+linelist_cleaned <- linelist_cleaned[linelist_cleaned$bmi >= 0,]
+```
+
+```{r}
+ggplot(data=linelist_cleaned,aes(x=wt_kg,y=ht_cm)) + geom_point() + geom_smooth(method = 'lm')
+```
+
+```{r}
+library(dplyr)
+
+lm(ht_cm ~ wt_kg + age + bmi, data = linelist_cleaned)
+```

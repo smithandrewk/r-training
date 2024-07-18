@@ -1,0 +1,280 @@
+```{r}
+pacman::p_load(rio,          # File import
+               here,         # File locator
+               tidyverse,    # data management + ggplot2 graphics
+               tsibble,      # handle time series datasets
+               slider,       # for calculating moving averages
+               imputeTS,     # for filling in missing values
+               feasts,       # for time series decomposition and autocorrelation
+               forecast,     # fit sin and cosin terms to data (note: must load after feasts)
+               trending,     # fit and assess models 
+               tmaptools,    # for getting geocoordinates (lon/lat) based on place names
+               ecmwfr,       # for interacting with copernicus sateliate CDS API
+               stars,        # for reading in .nc (climate data) files
+               units,        # for defining units of measurement (climate data)
+               yardstick,    # for looking at model accuracy
+               surveillance,# for aberration detection
+               )
+```
+
+```{r}
+# The example dataset used in this section is weekly counts of campylobacter cases reported in Germany between 2001 and 2011.
+counts <- rio::import("campylobacter_germany.xlsx")
+```
+
+```{r}
+pacman::p_load(tidyverse,tsibble)
+# Clean data
+typeof(counts$date)
+typeof(counts$case)
+## ensure the date column is in the appropriate format
+counts$date <- as.Date(counts$date)
+
+## create a calendar week variable 
+## fitting ISO definitons of weeks starting on a monday
+counts <- counts %>% 
+     mutate(epiweek = yearweek(date, week_start = 1))
+```
+
+```{r}
+yearweek(counts[1,1],week_start = 1)
+```
+
+```{r}
+## define time series object 
+counts <- tsibble(counts, index = epiweek)
+```
+
+```{r}
+class(counts)
+```
+
+```{r}
+## plot a line graph of cases by week
+ggplot(counts, aes(x = epiweek, y = case)) + 
+     geom_line()
+```
+
+```{r}
+## get a vector of TRUE/FALSE whether rows are duplicates
+are_duplicated(counts, index = epiweek) 
+```
+
+```{r}
+pacman::p_load(imputeTS)
+## create a variable with missings instead of weeks with reporting issues
+counts <- counts %>% 
+     mutate(case_miss = if_else(
+          ## if epiweek contains 52, 53, 1 or 2
+          str_detect(epiweek, "W51|W52|W53|W01|W02"), 
+          ## then set to missing 
+          NA_real_, 
+          ## otherwise keep the value in case
+          case
+     ))
+
+## alternatively interpolate missings by linear trend 
+## between two nearest adjacent points
+counts <- counts %>% 
+  mutate(case_int = imputeTS::na_interpolation(case_miss)
+         )
+
+## to check what values have been imputed compared to the original
+ggplot_na_imputations(counts$case_miss, counts$case_int) + 
+  ## make a traditional plot (with black axes and white background)
+  theme_classic()
+```
+
+```{r}
+## create a moving average variable (deals with missings)
+counts <- counts %>% 
+     ## create the ma_4w variable 
+     ## slide over each row of the case variable
+     mutate(ma_4wk = slider::slide_dbl(case, 
+                               ## for each row calculate the name
+                               ~ mean(.x, na.rm = TRUE),
+                               ## use the four previous weeks
+                               .before = 4))
+
+## make a quick visualisation of the difference 
+ggplot(counts, aes(x = epiweek)) + 
+     geom_line(aes(y = case)) + 
+     geom_line(aes(y = ma_4wk), colour = "red")
+```
+
+```{r}
+## Function arguments
+#####################
+## x is a dataset
+## counts is variable with count data or rates within x 
+## start_week is the first week in your dataset
+## period is how many units in a year 
+## output is whether you want return spectral periodogram or the peak weeks
+  ## "periodogram" or "weeks"
+
+# Define function
+periodogram <- function(x, 
+                        counts, 
+                        start_week = c(2002, 1), 
+                        period = 52, 
+                        output = "weeks") {
+  
+
+    ## make sure is not a tsibble, filter to project and only keep columns of interest
+    prepare_data <- dplyr::as_tibble(x)
+    
+    # prepare_data <- prepare_data[prepare_data[[strata]] == j, ]
+    prepare_data <- dplyr::select(prepare_data, {{counts}})
+    
+    ## create an intermediate "zoo" time series to be able to use with spec.pgram
+    zoo_cases <- zoo::zooreg(prepare_data, 
+                             start = start_week, frequency = period)
+    
+    ## get a spectral periodogram not using fast fourier transform 
+    periodo <- spec.pgram(zoo_cases, fast = FALSE, plot = FALSE)
+    
+    ## return the peak weeks 
+    periodo_weeks <- 1 / periodo$freq[order(-periodo$spec)] * period
+    
+    if (output == "weeks") {
+      periodo_weeks
+    } else {
+      periodo
+    }
+    
+}
+
+## get spectral periodogram for extracting weeks with the highest frequencies 
+## (checking of seasonality) 
+periodo <- periodogram(counts, 
+                       case_int, 
+                       start_week = c(2002, 1),
+                       output = "periodogram")
+
+## pull spectrum and frequence in to a dataframe for plotting
+periodo <- data.frame(periodo$freq, periodo$spec)
+
+## plot a periodogram showing the most frequently occuring periodicity 
+ggplot(data = periodo, 
+                aes(x = 1/(periodo.freq/52),  y = log(periodo.spec))) + 
+  geom_line() + 
+  labs(x = "Period (Weeks)", y = "Log(density)")
+```
+
+```{r}
+## get a vector weeks in ascending order 
+peak_weeks <- periodogram(counts, 
+                          case_int, 
+                          start_week = c(2002, 1), 
+                          output = "weeks")
+```
+
+```{r}
+pacman::p_load(feasts)
+## decompose the counts dataset 
+counts %>% 
+  # using an additive classical decomposition model
+  model(classical_decomposition(case_int, type = "additive")) %>% 
+  ## extract the important information from the model
+  components() %>% 
+  ## generate a plot 
+  autoplot()
+```
+
+```{r}
+pacman::p_load(forecast,trending)
+## add in fourier terms using the epiweek and case_int variabless
+counts$fourier <- select(counts, epiweek, case_int) %>% 
+  fourier(K = 1)
+```
+
+```{r}
+## define the model you want to fit (negative binomial) 
+model <- glm_nb_model(
+  ## set number of cases as outcome of interest
+  case_int ~
+    ## use epiweek to account for the trend
+    epiweek +
+    ## use the fourier terms to account for seasonality
+    fourier)
+
+## fit your model using the counts dataset
+fitted_model <- trending::fit(model, data.frame(counts))
+
+## calculate confidence intervals and prediction intervals 
+observed <- predict(fitted_model, simulate_pi = FALSE)
+
+estimate_res <- data.frame(observed$result)
+
+## plot your regression 
+ggplot(data = estimate_res, aes(x = epiweek)) + 
+  ## add in a line for the model estimate
+  geom_line(aes(y = estimate),
+            col = "Red") + 
+  ## add in a band for the prediction intervals 
+  geom_ribbon(aes(ymin = lower_pi, 
+                  ymax = upper_pi), 
+              alpha = 0.25) + 
+  ## add in a line for your observed case counts
+  geom_line(aes(y = case_int), 
+            col = "black") + 
+  ## make a traditional plot (with black axes and white background)
+  theme_classic()
+```
+
+```{r}
+## calculate the residuals 
+estimate_res <- estimate_res %>% 
+  mutate(resid = fitted_model$result[[1]]$residuals)
+
+## are the residuals fairly constant over time (if not: outbreaks? change in practice?)
+estimate_res %>%
+  ggplot(aes(x = epiweek, y = resid)) +
+  geom_line() +
+  geom_point() + 
+  labs(x = "epiweek", y = "Residuals")
+```
+
+```{r}
+## is there autocorelation in the residuals (is there a pattern to the error?)  
+estimate_res %>% 
+  as_tsibble(index = epiweek) %>% 
+  ACF(resid, lag_max = 52) %>% 
+  autoplot()
+```
+
+```{r}
+## are residuals normally distributed (are under or over estimating?)  
+estimate_res %>%
+  ggplot(aes(x = resid)) +
+  geom_histogram(binwidth = 100) +
+  geom_rug() +
+  labs(y = "count") 
+```
+
+```{r}
+
+```
+
+```{r}
+## define start date (when observations began)
+start_date <- min(counts$epiweek)
+
+## define a cut-off week (end of baseline, start of prediction period)
+cut_off <- yearweek("2010-12-31")
+
+## define the last date interested in (i.e. end of prediction)
+end_date <- yearweek("2011-12-31")
+
+## find how many weeks in period (year) of interest
+num_weeks <- as.numeric(end_date - cut_off)
+## add in missing weeks till end of year 
+counts <- counts %>%
+  ## group by the region
+  group_by_key() %>%
+  ## for each group add rows from the highest epiweek to the end of year
+  group_modify(~add_row(.,
+                        epiweek = seq(max(.$epiweek) + 1, 
+                                      end_date,
+                                      by = 1)))
+```

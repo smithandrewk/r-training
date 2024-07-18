@@ -1,0 +1,49 @@
+Lesson 3
+
+8 December 2023
+
+```{r}
+print("hello")
+```
+
+```{r}
+library(readxl)
+linelist_cleaned <- read_excel("linelist_cleaned.xlsx")
+View(linelist_cleaned)
+```
+
+```{r}
+our_mean <- function(v) {
+  total <- 0
+  for (val in v) {
+    total <- total + val
+  }
+  return(total / length(v))
+}
+```
+
+```{r}
+avg <- our_mean(c(1,2,3,4,5))
+avg
+```
+
+```{r}
+total <- 0
+v <- c(1,2,3,4,5)
+for (val in v) {
+  total <- total + val
+  print(total)
+}
+total / length(v)
+```
+
+```{r}
+library(readxl)
+source("dhec_utils/utils.R")
+linelist <- read_excel("linelist_cleaned.xlsx")
+data_cleaning_procedure(linelist)
+```
+
+``` {help(str_trim)}
+# a bit of git instruction
+```

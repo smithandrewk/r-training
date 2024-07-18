@@ -1,0 +1,48 @@
+```{r}
+
+ref_seq <- "AGTATGGCAGTCAGTATG"
+seqs <- c(
+  "AGTATAAAAAAAAAAAAA",
+  "AGTAGAAAAAAAAAAAAA",
+  "AGTATCGCCTGATCGATG",
+  "AGTATGGCGTGATCGATG"
+)
+```
+
+```{r}
+print(ref_seq)
+for (seq in seqs) {
+  print(seq)
+}
+# Sequence Alignment
+```
+
+```{r}
+# Single Nucleotide Polymorphism
+# SNP Distance
+for (seq in seqs) {
+  dist <- 0
+  for (i in 1:nchar(ref_seq)) {
+    tmp <- substring(seq,i,i) == substring(ref_seq,i,i)
+    if (tmp == FALSE) {
+      dist <- dist + 1
+    }
+  }
+  print(dist)
+}
+```
+
+```{r}
+library(ape)
+sequences <- read.dna("sequences.fasta","fasta")
+```
+
+```{r}
+dist.dna(seqs)
+```
+
+```{r}
+library(ape)
+tree <- read.tree("strep_tree.newick")
+plot.phylo(tree,type="fan",tip.color="blue")
+```
