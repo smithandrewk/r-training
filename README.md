@@ -1,4 +1,5 @@
 # R Training Repository
+![R Training Workspace](header.webp)
 
 Welcome to the R Training Repository. This repository contains code and resources from various lectures on R programming that I have delivered. The structure of this repository is organized by date and topic, ensuring that you can easily navigate through the material.
 
