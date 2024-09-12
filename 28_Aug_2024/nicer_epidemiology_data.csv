@@ -1,0 +1,101 @@
+age,fever,cough,exposure,outcome
+57,no,yes,no,Infected
+47,no,no,yes,Not Infected
+59,no,no,no,Not Infected
+72,no,no,no,Not Infected
+46,yes,no,no,Not Infected
+46,no,yes,no,Infected
+73,no,no,yes,Infected
+61,yes,no,yes,Infected
+42,no,yes,no,Infected
+58,yes,no,no,Infected
+43,yes,yes,no,Infected
+43,no,yes,no,Infected
+53,no,yes,no,Infected
+21,no,no,no,Not Infected
+24,no,no,no,Not Infected
+41,no,yes,yes,Not Infected
+34,no,no,yes,Infected
+54,no,yes,no,Not Infected
+36,no,yes,no,Not Infected
+28,no,yes,yes,Infected
+71,yes,no,yes,Infected
+46,no,no,yes,Not Infected
+51,no,yes,yes,Infected
+28,no,no,no,Not Infected
+41,yes,no,no,Not Infected
+51,no,no,yes,Infected
+32,no,yes,no,Not Infected
+55,yes,yes,yes,Infected
+40,no,no,yes,Not Infected
+45,yes,no,yes,Infected
+40,no,yes,no,Not Infected
+77,no,yes,yes,Infected
+49,no,no,no,Not Infected
+34,no,no,yes,Not Infected
+62,no,yes,yes,Not Infected
+31,yes,yes,no,Infected
+53,no,yes,yes,Infected
+20,no,yes,yes,Not Infected
+30,no,no,no,Not Infected
+52,no,no,no,Infected
+61,no,yes,no,Infected
+52,no,yes,no,Not Infected
+48,no,yes,no,Not Infected
+45,no,yes,yes,Not Infected
+27,no,no,no,Not Infected
+39,no,no,no,Infected
+43,no,yes,yes,Infected
+65,no,yes,no,Infected
+55,yes,yes,yes,Not Infected
+23,no,yes,no,Not Infected
+54,no,yes,no,Not Infected
+44,no,no,yes,Infected
+39,yes,no,yes,Infected
+59,yes,no,yes,Infected
+65,no,no,yes,Infected
+63,no,no,yes,Not Infected
+37,yes,no,no,Not Infected
+45,no,no,no,Not Infected
+54,no,no,yes,Not Infected
+64,no,no,yes,Not Infected
+42,no,no,yes,Not Infected
+47,yes,no,no,Infected
+33,yes,yes,no,Infected
+32,no,no,yes,Not Infected
+62,no,no,no,Not Infected
+70,no,no,yes,Infected
+48,yes,yes,yes,Infected
+65,yes,no,no,Infected
+55,yes,yes,yes,Not Infected
+40,yes,no,yes,Not Infected
+55,no,no,no,Not Infected
+73,no,no,yes,Infected
+49,no,no,yes,Infected
+73,yes,yes,yes,Infected
+10,no,yes,no,Not Infected
+62,no,yes,yes,Infected
+51,no,no,no,Infected
+45,no,no,no,Not Infected
+51,no,yes,yes,Not Infected
+20,no,no,no,Not Infected
+46,no,no,no,Not Infected
+55,no,no,yes,Infected
+72,no,no,yes,Not Infected
+42,no,yes,yes,Not Infected
+37,yes,yes,yes,Infected
+42,no,yes,no,Not Infected
+63,no,no,no,Not Infected
+54,yes,no,no,Infected
+42,no,no,yes,Infected
+57,yes,no,yes,Infected
+51,no,no,yes,Not Infected
+64,no,yes,yes,Infected
+39,no,yes,no,Infected
+45,no,no,no,Not Infected
+44,no,yes,no,Infected
+28,no,yes,yes,Infected
+54,yes,no,no,Not Infected
+53,no,yes,yes,Infected
+50,yes,no,no,Not Infected
+46,no,no,no,Infected
