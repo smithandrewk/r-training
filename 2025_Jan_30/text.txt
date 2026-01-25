@@ -1,0 +1,1 @@
+apple,BANANA,ora$$nge,1e5	1e-5
